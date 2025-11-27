@@ -1,16 +1,17 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-import dotenv
+from dotenv import load_dotenv
 
-dotenv.load_dotenv()
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'unsafe-secret-key')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = ['*'] # Restrict this in production to your DigitalOcean domain
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-key')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Application definition
+# Allow your Vercel frontend domain here
+ALLOWED_HOSTS = ['*'] 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -22,15 +23,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'django_filters',
-    # Local
+    # Local apps
     'users',
     'core',
     'payments',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # Must be at top
+    'corsheaders.middleware.CorsMiddleware',  # Top of list
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -40,13 +40,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Database - MySQL for DigitalOcean
+ROOT_URLCONF = 'applaude_backend.urls'
+WSGI_APPLICATION = 'applaude_backend.wsgi.application'
+
+# Database: MySQL on DigitalOcean
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'applaude_db'),
-        'USER': os.getenv('DB_USER', 'applaude_user'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'password'),
+        'NAME': os.getenv('DB_NAME', 'applaude'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {'charset': 'utf8mb4'},
@@ -56,27 +59,34 @@ DATABASES = {
 # User Model
 AUTH_USER_MODEL = 'users.User'
 
-# REST Framework
+# REST Framework Config
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
 }
 
-# CORS - Allow Vercel Frontend
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+# CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:8080",
-    "https://your-vercel-app.vercel.app", # REPLACE ME
+    "http://localhost:5173",          # Local Frontend
+    "https://your-frontend.vercel.app" # Production Frontend (Replace this)
 ]
 
-# Celery
+# Celery Configuration
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 
-# Keys
+# Service Keys
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
-GITHUB_ACCESS_TOKEN = os.getenv('GITHUB_ACCESS_TOKEN') # For backend operations
+GITHUB_CLIENT_ID = os.getenv('GITHUB_CLIENT_ID')
+GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
