@@ -1,13 +1,12 @@
 Django>=5.0
 djangorestframework
 djangorestframework-simplejwt
-mysqlclient
 django-cors-headers
+mysqlclient
 requests
 anthropic
 celery
 redis
 python-dotenv
 PyGithub
-django-filter
 gunicorn
