@@ -5,6 +5,18 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     github_access_token = models.CharField(max_length=255, blank=True, null=True)
     
+    # Resolves conflict with Django's default User model
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='applaude_user_set',
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='applaude_user_set',
+        blank=True
+    )
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
