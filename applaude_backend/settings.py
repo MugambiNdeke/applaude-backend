@@ -43,7 +43,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'applaude_backend.urls'
 WSGI_APPLICATION = 'applaude_backend.wsgi.application'
 
-# Database: MySQL on DigitalOcean
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -51,10 +51,23 @@ DATABASES = {
         'USER': os.getenv('DB_USER', 'root'),
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {'charset': 'utf8mb4'},
+        'PORT': os.getenv('DB_PORT', '25060'),
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            # Important for DigitalOcean Managed Databases
+            'ssl': {'ca': os.getenv('MYSQL_ATTR_SSL_CA', None)} if os.getenv('DB_USE_SSL') == 'True' else None
+        },
     }
 }
+
+# Security settings for Production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
 
 # User Model
 AUTH_USER_MODEL = 'users.User'
